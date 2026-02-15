@@ -40,10 +40,11 @@ void setup()
   Serial.println("\n\n Using the PNGdec library");
 
   // Initialise FS
-  if (!FileSys.begin()) {
+  if (!FileSys.begin())
+  {
     Serial.println("Listing LittleFS root:");
     File root = FileSys.open("/", "r");
-    while (File f = root.openNextFile()) 
+    while (File f = root.openNextFile())
     {
       Serial.print("  ");
       Serial.print(f.name());
@@ -68,22 +69,27 @@ void loop()
 {
   // Scan LittleFS and load any *.png files
   File root = LittleFS.open("/", "r");
-  while (File file = root.openNextFile()) {
+  while (File file = root.openNextFile())
+  {
     String strname = file.name();
     strname = "/" + strname;
     Serial.println(file.name());
     // If it is not a directory and filename ends in .png then load it
-    if (!file.isDirectory() && strname.endsWith(".png")) {
+    if (!file.isDirectory() && strname.endsWith(".png"))
+    {
       // Pass support callback function names to library
       int16_t rc = png.open(strname.c_str(), pngOpen, pngClose, pngRead, pngSeek, pngDraw);
-      if (rc == PNG_SUCCESS) {
+      if (rc == PNG_SUCCESS)
+      {
         tft.startWrite();
         Serial.printf("image specs: (%d x %d), %d bpp, pixel type: %d\n", png.getWidth(), png.getHeight(), png.getBpp(), png.getPixelType());
         uint32_t dt = millis();
-        if (png.getWidth() > MAX_IMAGE_WIDTH) {
+        if (png.getWidth() > MAX_IMAGE_WIDTH)
+        {
           Serial.println("Image too wide for allocated line buffer size!");
         }
-        else {
+        else
+        {
           rc = png.decode(NULL, 0);
           png.close();
         }

@@ -81,9 +81,11 @@ void setup() {
   Serial.println("\nTouch the screen with stylus...\n");
 }
 
-void loop() {
+void loop() 
+{
   // Read touch with interrupt pin
-  if (digitalRead(T_IRQ) == LOW) {  // Touch detected (IRQ goes low)
+  if (digitalRead(T_IRQ) == LOW)  // Touch detected (IRQ goes low)
+  {
     uint16_t rawX, rawY, rawZ;
 
     // Read touch coordinates
@@ -92,7 +94,8 @@ void loop() {
     rawZ = readTouchRaw(0xB0);  // Z1 (pressure)
 
     // Valid touch has reasonable values
-    if (rawZ > 400) {  // Pressure threshold
+    if (rawZ > 400)  // Pressure threshold
+    {
       // Map to screen coordinates (adjusted calibration - shifted right slightly)
       int screenX = map(rawX, 200, 3700, 0, SCREEN_WIDTH);
       int screenY = map(rawY, 300, 3800, 0, SCREEN_HEIGHT);
@@ -147,8 +150,10 @@ uint16_t readTouchRaw(uint8_t command) {
 }
 
 // Bit-bang SPI write
-void spiWrite(uint8_t data) {
-  for (int i = 7; i >= 0; i--) {
+void spiWrite(uint8_t data)
+{
+  for (int i = 7; i >= 0; i--)
+  {
     digitalWrite(T_CLK, LOW);
     digitalWrite(T_DIN, (data >> i) & 0x01);
     delayMicroseconds(1);
@@ -158,16 +163,19 @@ void spiWrite(uint8_t data) {
 }
 
 // Bit-bang SPI read
-uint8_t spiRead() {
+uint8_t spiRead()
+{
   uint8_t data = 0;
 
-  for (int i = 7; i >= 0; i--) {
+  for (int i = 7; i >= 0; i--)
+  {
     digitalWrite(T_CLK, LOW);
     delayMicroseconds(1);
     digitalWrite(T_CLK, HIGH);
     delayMicroseconds(1);
 
-    if (digitalRead(T_DO)) {
+    if (digitalRead(T_DO))
+    {
       data |= (1 << i);
     }
   }
