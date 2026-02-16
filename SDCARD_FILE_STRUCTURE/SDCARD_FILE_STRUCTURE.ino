@@ -941,8 +941,7 @@ void setup()
   WiFi.mode(WIFI_AP);
   bool apOk = WiFi.softAP(AP_SSID, AP_PASS);
 
-  if (apOk)
-  {
+  if (apOk) {
     wifiIP = WiFi.softAPIP().toString();
     Serial.println("\n=== WiFi Hotspot Started ===");
     Serial.printf("SSID: %s\n", AP_SSID);
@@ -959,9 +958,7 @@ void setup()
 
     server.begin();
     Serial.println("Web server started");
-  }
-  else
-  {
+  } else {
     Serial.println("WiFi AP failed");
     wifiIP = "";
   }
