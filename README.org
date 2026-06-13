@@ -1,0 +1,5 @@
+#+TITLE: README for ESP32_TFT Repo
+#+AUTHOR: Ryan Devens
+#+SUMMARY: A collection of tried and tested jumping off points for working with ESP32 with built in TFT screen
+
+This doc duplicates README.md (for now) as part of my Emacs transition
