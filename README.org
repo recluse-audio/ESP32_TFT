@@ -3,3 +3,26 @@
 #+SUMMARY: A collection of tried and tested jumping off points for working with ESP32 with built in TFT screen
 
 This doc duplicates README.md (for now) as part of my Emacs transition
+
+* WIFI
+
+** Join the ESP32_NOTES board network
+Rescan first (the board SSID is often missing from the cached list), then join.
+#+begin_src sh
+nmcli device wifi rescan
+sleep 5
+nmcli device wifi list | grep -i ESP32_NOTES
+nmcli device wifi connect ESP32_NOTES password notesync123
+#+end_src
+
+** Get back onto home WiFi (RD_WIFI)
+Bring the saved home profile back up. No password needed for the saved profile.
+#+begin_src sh
+nmcli connection up RD_WIFI
+#+end_src
+
+** Verify you are back online
+#+begin_src sh
+nmcli -t -f NAME connection show --active
+ping -c 2 1.1.1.1
+#+end_src

@@ -28,6 +28,7 @@
 
 #include "ENGINE/ESP32FileOperator.h"
 #include "ENGINE/ESP32GraphicsRenderer.h"
+#include "NotesSyncServer.h"
 
 // --- Backlight: this board needs pin 21 driven HIGH manually before init ---
 // (TFT_eSPI's automatic TFT_BL handling does not light it on this hardware;
@@ -36,6 +37,10 @@ static const int BL_PIN = 21;
 
 // --- Data root on the SD card: the mirror of the NOTES vault lives here ---
 static const char* DATA_ROOT = "/NOTES";
+
+// --- WiFi access point the desktop joins to push notes (Phase 2) ----------
+static const char* AP_SSID = "ESP32_NOTES";
+static const char* AP_PASS = "notesync123";   // >= 8 chars for WPA2; local-only
 
 // --- SD pin config (VSPI — separate bus from the TFT on HSPI) -------------
 static const int SD_CS   =  5;
@@ -62,6 +67,7 @@ static const int TOUCH_RAW_Y_RIGHT  = 1834;
 static TFT_eSPI                gTft;
 static ESP32FileOperator       gFileOperator;
 static ESP32GraphicsRenderer*  gRenderer = nullptr;
+static NotesSyncServer         gSync;
 
 // --- Touch (XPT2046 software SPI) -----------------------------------------
 
@@ -205,19 +211,44 @@ void setup()
     gRenderer->drawLabel(std::string("NOTES files: ") + std::to_string(total), 10, 50);
 
     touchInit();
-    Serial.println("[NOTES_SYNC] Touch ready. Phase 0 setup complete.");
+    Serial.println("[NOTES_SYNC] Touch ready.");
+
+    // --- WiFi access point + receive server (Phase 2) ---------------------
+    IPAddress ip = gSync.begin(AP_SSID, AP_PASS, DATA_ROOT);
+    Serial.printf("[NOTES_SYNC] SoftAP up: SSID=%s  IP=%s\n", AP_SSID, ip.toString().c_str());
+    gRenderer->drawLabel(std::string("WiFi: ") + AP_SSID, 10, 70);
+    gRenderer->drawLabel(std::string("IP: ") + ip.toString().c_str(), 10, 90);
+    gRenderer->drawLabel("Run desktop sync to push notes", 10, 120);
+    Serial.println("[NOTES_SYNC] Phase 2 setup complete. Waiting for desktop pushes.");
 }
 
 static bool gPrevTouched = false;
+static int  gLastReceived = -1;
+static int  gLastDeleted  = -1;
 
 // -------------------------------------------------------------------------
 void loop()
 {
-    // Phase 0: just report taps so we can confirm touch is wired correctly.
+    // Service the web server (desktop file pushes).
+    gSync.handle();
+
+    // Touch — report taps (the on-screen Sync button comes in Phase 3).
     int tx, ty;
     bool touched = touchRead(tx, ty);
     if (touched && !gPrevTouched)
         Serial.printf("[NOTES_SYNC] tap (%d, %d)\n", tx, ty);
     gPrevTouched = touched;
-    delay(10);
+
+    // Live receive/delete counters on screen as files arrive.
+    int rec = gSync.filesReceived();
+    int del = gSync.filesDeleted();
+    if (rec != gLastReceived || del != gLastDeleted)
+    {
+        gLastReceived = rec;
+        gLastDeleted  = del;
+        gRenderer->drawFilledRect(0, 150, 320, 20, 0, 0, 0, 255);
+        gRenderer->drawLabel(std::string("recv: ") + std::to_string(rec) +
+                             "  del: " + std::to_string(del), 10, 150);
+        Serial.printf("[NOTES_SYNC] progress: recv=%d del=%d\n", rec, del);
+    }
 }

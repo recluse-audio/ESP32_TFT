@@ -19,4 +19,5 @@ Append-only. Newest entries at the bottom. Source of truth for /rd_plan --resume
 ## 2026-06-13 13:44 CDT (2026-06-13T18:44Z) — phase-done
 - activeFocus: "NOTES_SYNC :: Phase 1 — Thin notes browser :: next; Phase 0 hardware-verified"
 - commit: 18fc707
+- committed as 56bb526 ("got notes sync working again") by the user.
 - note: Phase 0 VERIFIED on hardware (/dev/ttyUSB0). Serial: "SD ready", "/NOTES not found ... Total files: 0", "FileOperator.listDirectory(/) -> 0 entries", "Touch ready". Display shows white "NOTES_SYNC" + "NOTES files: 0" correctly. The 0 is expected — SD card has no /NOTES content yet (sync is Phase 2). White-screen blocker resolved: switched NOTES_SYNC.ino from per-sketch USER_SETUP_LOADED include to the library User_Setup.h mechanism (installed CONFIG/User_Setup_TFT_eSPI.h into ~/Arduino/libraries/TFT_eSPI/User_Setup.h; original backed up as User_Setup.h.orig_backup) after confirming Basic_ESP32_TFT_Test.ino works that way. Added manual GPIO21 backlight drive. Saved project memories (white-screen fix, serial access, plan). Per-device checklist updated. Next: Phase 1 thin notes browser, or commit Phase 0 first.

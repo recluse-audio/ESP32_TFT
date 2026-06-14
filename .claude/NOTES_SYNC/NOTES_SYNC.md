@@ -8,8 +8,8 @@ repo is strictly read-only; only the ESP32 writes its own SD card.
 Effort: medium
 
 ## Status
-- activeFocus: "NOTES_SYNC :: Phase 1 — Thin notes browser :: next; Phase 0 hardware-verified"
-- last commit: 18fc707 (Phase 0 files uncommitted)
+- activeFocus: "NOTES_SYNC :: Phase 1 — Thin notes browser :: next; Phase 0 committed + hardware-verified"
+- last commit: 56bb526 (Phase 0 committed)
 - updated: 2026-06-13 13:44 CDT / 2026-06-13T18:44Z
 
 ## Display config gotcha (resolved — see also project memory)
