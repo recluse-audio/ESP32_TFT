@@ -29,6 +29,7 @@
 #include "ENGINE/ESP32FileOperator.h"
 #include "ENGINE/ESP32GraphicsRenderer.h"
 #include "NotesSyncServer.h"
+#include "NotesBrowser.h"
 
 // --- Backlight: this board needs pin 21 driven HIGH manually before init ---
 // (TFT_eSPI's automatic TFT_BL handling does not light it on this hardware;
@@ -68,6 +69,7 @@ static TFT_eSPI                gTft;
 static ESP32FileOperator       gFileOperator;
 static ESP32GraphicsRenderer*  gRenderer = nullptr;
 static NotesSyncServer         gSync;
+static NotesBrowser*           gBrowser  = nullptr;
 
 // --- Touch (XPT2046 software SPI) -----------------------------------------
 
@@ -207,48 +209,38 @@ void setup()
     std::vector<std::string> top = gFileOperator.listDirectory("/");
     Serial.printf("[NOTES_SYNC] FileOperator.listDirectory(\"/\") -> %d entries\n", (int)top.size());
 
-    // Show the count on screen so the board reports liveness without a serial cable
-    gRenderer->drawLabel(std::string("NOTES files: ") + std::to_string(total), 10, 50);
-
     touchInit();
     Serial.println("[NOTES_SYNC] Touch ready.");
 
     // --- WiFi access point + receive server (Phase 2) ---------------------
     IPAddress ip = gSync.begin(AP_SSID, AP_PASS, DATA_ROOT);
     Serial.printf("[NOTES_SYNC] SoftAP up: SSID=%s  IP=%s\n", AP_SSID, ip.toString().c_str());
-    gRenderer->drawLabel(std::string("WiFi: ") + AP_SSID, 10, 70);
-    gRenderer->drawLabel(std::string("IP: ") + ip.toString().c_str(), 10, 90);
-    gRenderer->drawLabel("Run desktop sync to push notes", 10, 120);
-    Serial.println("[NOTES_SYNC] Phase 2 setup complete. Waiting for desktop pushes.");
+
+    // --- Phase 1 notes browser (the main on-screen UI) -------------------
+    gBrowser = new NotesBrowser(gTft, *gRenderer, DATA_ROOT);
+    gBrowser->begin();
+    Serial.println("[NOTES_SYNC] Phase 1 browser ready. Tap to navigate; UP at root refreshes.");
 }
 
 static bool gPrevTouched = false;
-static int  gLastReceived = -1;
-static int  gLastDeleted  = -1;
 
 // -------------------------------------------------------------------------
 void loop()
 {
-    // Service the web server (desktop file pushes).
+    // Service the web server (desktop file pushes) every iteration so syncs
+    // keep working while the user browses.
     gSync.handle();
 
-    // Touch — report taps (the on-screen Sync button comes in Phase 3).
+    // Touch — drive the notes browser on a leading-edge tap.
     int tx, ty;
     bool touched = touchRead(tx, ty);
     if (touched && !gPrevTouched)
+    {
         Serial.printf("[NOTES_SYNC] tap (%d, %d)\n", tx, ty);
+        gBrowser->handleTap(tx, ty);
+    }
     gPrevTouched = touched;
 
-    // Live receive/delete counters on screen as files arrive.
-    int rec = gSync.filesReceived();
-    int del = gSync.filesDeleted();
-    if (rec != gLastReceived || del != gLastDeleted)
-    {
-        gLastReceived = rec;
-        gLastDeleted  = del;
-        gRenderer->drawFilledRect(0, 150, 320, 20, 0, 0, 0, 255);
-        gRenderer->drawLabel(std::string("recv: ") + std::to_string(rec) +
-                             "  del: " + std::to_string(del), 10, 150);
-        Serial.printf("[NOTES_SYNC] progress: recv=%d del=%d\n", rec, del);
-    }
+    // Redraw only when the browser state changed.
+    gBrowser->tick();
 }

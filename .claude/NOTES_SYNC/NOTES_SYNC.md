@@ -8,9 +8,11 @@ repo is strictly read-only; only the ESP32 writes its own SD card.
 Effort: medium
 
 ## Status
-- activeFocus: "NOTES_SYNC :: Phase 1 — Thin notes browser :: next; Phase 0 committed + hardware-verified"
-- last commit: 56bb526 (Phase 0 committed)
-- updated: 2026-06-13 13:44 CDT / 2026-06-13T18:44Z
+- activeFocus: "NOTES_SYNC :: Phase 4 — Sync button + status UI :: next; Phase 1 hardware-verified"
+- last commit: 844e9d7 (Phase 0 + Phases 2/3 committed; Phase 1 code committed alongside this update)
+- updated: 2026-06-13 20:59 CDT / 2026-06-14T01:59Z
+- Phases 0-3 complete and hardware-verified. Phase 1 browser (NOTES_SYNC/NotesBrowser.h + NOTES_SYNC.ino wiring) verified on-device: 359 files list, tap-navigate folders, open a RECIPES .md.
+- NEXT: Phase 4 (on-screen Sync button + live received/total status UI), then Phase 5 (more file types: images via PNGdec, placeholders for pdf/xlsx/zip).
 
 ## Display config gotcha (resolved — see also project memory)
 - The per-sketch `#define USER_SETUP_LOADED` + include of CONFIG/User_Setup_TFT_eSPI.h left the panel SOLID WHITE on a fresh machine, even though it compiled and reported using the config.
